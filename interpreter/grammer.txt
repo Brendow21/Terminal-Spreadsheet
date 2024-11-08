@@ -1,0 +1,64 @@
+# This looks like a grammar. Left-associative operators recurse on the left and
+# descend on the right. Right-associative operators flip. There are cleanly
+# divided precedence levels.
+(* Starting point *)
+expression = level0
+
+(* Level 0 *)
+level0      = level1
+            | level0 && level1
+            | level0 || level1
+
+(* Level 1 *)
+level1      = level2
+            | level1 == level2
+            | level1 != level2
+            | level1 < level2
+            | level1 <= level2
+            | level1 > level2
+            | level1 >= level2
+
+(* Level 2 - Bitwise and, or, xor *)
+level2      = level3
+            | level2 & level3
+            | level2 | level3
+            | level2 ^ level3
+
+(* Level 3 - Addittion, Subtraction*)
+level3      = level4
+            | level3 + level4
+            | level3 - level4
+
+(* Level 4 - Multiplication, division, mod *)
+level4      = level5
+            | level4 * level5
+            | level4 / level5
+            | level4 % level5
+
+# Exponentation is right-associative. It should recurse in its right operand
+# but descend in its left. Also, I'd separate the unary operators into their
+# own precedence level. It's unclear how ~2 ^ 3 should parse if they are at the
+# same level.
+(* Level 5 - Exponent, Negate, Not, Bitwise Not*)
+level5      = level6
+            | level6 ^ level5
+            | - level5
+            | ! level5
+            | ~ level5
+
+(* Level 6 *)
+level6      = level7
+            | "float_to_int" level7
+            | "int_to_float" level7
+
+(* Level 7 *)
+level7      = max "(" expression ("," expression)* ")"
+            | min "(" expression ("," expression)* ")"
+            | mean "(" expression ("," expression)* ")"
+            | sum "(" expression ("," expression)* ")"
+            | integer
+            | float
+            | boolean
+            | string
+            | cell_address
+            | "(" expression ")"
